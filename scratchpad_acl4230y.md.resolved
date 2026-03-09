@@ -1,0 +1,163 @@
+# Task: Explore Quiki_Design Figma and Capture Screenshots
+
+## Plan
+1. [ ] Take initial screenshot and get DOM.
+2. [ ] Zoom to fit (Shift+1) to see all frames.
+3. [ ] Identify and list all frames/screens.
+4. [ ] For each frame:
+    - [ ] Zoom to the frame.
+    - [ ] Take a screenshot.
+    - [ ] Analyze and record UI details (name, elements, colors, fonts, layout).
+5. [ ] Provide a final detailed summary.
+
+## Frames Identified
+- **Group 1: Auth & Profile**
+    - login
+    - OTP
+    - Set Password (labeled ".")
+    - Profile
+- **Group 2: Checkout & Payment**
+    - My Cart
+    - Checkout
+    - Shipping Address
+    - Payment Method
+    - Add Card
+    - Coupon
+    - Review Summary
+    - E-Receipt
+- **Group 3: Search, Order & Chat**
+    - Search
+    - Home / Discover
+    - Search Results
+    - Filter
+    - Product Detail
+    - My Orders (Current/Active)
+    - Track Order
+    - Tracking Map
+    - My Orders (All/Tabs)
+    - My Orders (Completed)
+    - My Orders (Cancelled)
+    - Chat List
+    - Chat Information
+    - Chat Conversation
+    - Video Call
+    - Notifications
+
+## Screen Details
+
+### 1. Login Screen
+- **Name**: login
+- **Layout**: Single column, centered elements.
+- **UI Elements**:
+    - Header: "Sign In"
+    - Inputs: "Enter your email", "Enter your password" (with eye icon).
+    - Button: "Login" (Dark brown background, white text).
+    - Links: "Don't have an account? Sign Up", "Continue as Guest".
+    - Social: "Continue with Google", "Continue with Apple", "Continue with Facebook" (icons with text).
+- **Styling**: Minimalist, white background, rounded corners on inputs and buttons. Dark brown primary accent color.
+
+### 3. Set New Password Screen
+- **Name**: . (labeled as "Set a new password")
+- **Layout**: Single column.
+- **UI Elements**:
+    - Header: "Set a new password"
+    - Subtext: "Your new password must be different from previous used passwords."
+    - Inputs: "Password", "Confirm Password" (with eye icons).
+    - Button: "Update Password" (Dark brown).
+- **Styling**: Consistent with the design system.
+
+### 4. Profile Screen
+- **Name**: Profile
+- **Layout**: Single column with scrollable content.
+- **UI Elements**:
+    - Header: "Profile" with Back icon.
+    - Profile Picture: Circular image with edit icon.
+    - Fields: Full Name, Email, Phone Number, Address, Country, Date of Birth.
+    - Button: "Update" or "Save" at the bottom.
+- **Styling**: Rounded input fields, dark brown accent.
+
+### 5. My Cart Screen
+- **Name**: My Cart
+- **Layout**: List with summary at the bottom.
+- **UI Elements**:
+    - List of products: Item image, Title (e.g., Chocolate Cake), Category, Price, and Quantity selector.
+    - Swipe-to-delete action on items.
+    - "Promo Code" input field with "Apply" button.
+    - Order summary: Sub-total, Delivery Fee, Discount, and Total Cost.
+    - Button: "Proceed to Checkout" (Dark brown).
+- **Styling**: Card-based layout for items.
+
+### 6. Checkout Screen
+- **Name**: Checkout
+- **Layout**: Sectioned details.
+- **UI Elements**:
+    - Header: "Checkout".
+    - Shipping Address: Displays current address with a "CHANGE" button.
+    - Order List: Compact list of items.
+    - Button: "Continue to Payment" (Dark brown).
+- **Styling**: Minimalist icons and clear section headers.
+
+### 7. Shipping Address Screen
+- **Name**: Shipping Address
+- **Layout**: List of addresses.
+- **UI Elements**:
+    - List: Home, Office, Parent's House, etc. with full addresses.
+    - Icons for each category (house, briefcase).
+    - Radio buttons for selection.
+    - Button: "Add New Shipping Address" (Dashed border).
+    - Primary Button: "Apply" (Dark brown).
+- **Styling**: Consistent with the design system, clean list items.
+
+### 8. Payment Method Screen
+- **Name**: Payment Method
+- **Layout**: Categorized list with a balance display.
+- **UI Elements**:
+    - Wallet section with current balance.
+    - Credit/Debit Card section with an "Add card" option.
+    - Other methods: PayPal, Apple Pay, Google Pay.
+    - Primary Button: "Confirm Payment".
+- **Styling**: Uses icons for each payment type, consistent dark brown button.
+
+### 9. Add Card Screen
+- **Name**: Add Card
+- **Layout**: Form with a visual card preview.
+- **UI Elements**:
+    - Visual card showing chip, number, holder name, and expiry date.
+    - Input fields: Holder Name, Card Number, Expiry, CVV.
+    - Checkbox: "Save Card".
+    - Primary Button: "Add Card".
+- **Styling**: Card preview has a dark brown gradient/solid color.
+
+### 10. Home / Discover Screen
+- **Name**: Home
+- **Layout**: Header with location, search bar, category icons, and product grid.
+- **UI Elements**:
+    - Header: Location picker ("New York, USA") and notification bell.
+    - Search Bar: "Search for cakes, desserts...".
+    - Banner: Promotional offer ("30% Off").
+    - Categories: Horizontal scrollable icons (All, Cakes, Cupcakes, etc.).
+    - Product Grid: Cards with image, title, category, price, and rating.
+    - Navigation Bar: Home, Search, Orders, Profile.
+
+### 11. Product Detail Screen
+- **Name**: Product Detail
+- **Layout**: Large image on top, details below.
+- **UI Elements**:
+    - Product Image with Back and Favorite buttons.
+    - Title (e.g., Chocolate Cake) and Category.
+    - Rating (4.5).
+    - Description text.
+    - Size selection (Regular, Large).
+    - Quantity selector (- / +).
+    - Primary Button: "Add to Cart" with Price display.
+
+### 12. Track Order Screen
+- **Name**: Track Order
+- **Layout**: Timeline-based status tracking.
+- **UI Elements**:
+    - Header: "Track Order".
+    - Visual Timeline: Order Placed, In Progress, In Transit, Delivered.
+    - Status details with timestamps.
+    - Delivery Address display.
+    - Order Summary: Compact list of items and Total.
+- **Styling**: Uses status icons (checkmarks, clock, truck).
