@@ -30,10 +30,13 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen> {
         ),
         title: const Text('Shipping Address'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
+      body: RadioGroup<int>(
+        groupValue: _selected,
+        onChanged: (v) => setState(() => _selected = v!),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            children: [
             Expanded(
               child: ListView.builder(
                 itemCount: _addresses.length,
@@ -74,9 +77,7 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen> {
                           ),
                           Radio<int>(
                             value: i,
-                            groupValue: _selected,
                             activeColor: AppColors.primary,
-                            onChanged: (v) => setState(() => _selected = v!),
                           ),
                         ],
                       ),
@@ -109,6 +110,8 @@ class _ShippingAddressScreenState extends State<ShippingAddressScreen> {
           ],
         ),
       ),
+      ),
     );
   }
 }
+

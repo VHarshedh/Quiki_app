@@ -24,11 +24,14 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
         ),
         title: const Text('Payment Methods'),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      body: RadioGroup<String>(
+        groupValue: _selected,
+        onChanged: (v) => setState(() => _selected = v!),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             // Cash
             _sectionTitle('Cash'),
             _paymentOption('cash', 'Cash', Icons.money),
@@ -74,6 +77,7 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
           ],
         ),
       ),
+      ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(20),
         child: PrimaryButton(
@@ -118,9 +122,7 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
             const Spacer(),
             Radio<String>(
               value: value,
-              groupValue: _selected,
               activeColor: AppColors.primary,
-              onChanged: (v) => setState(() => _selected = v!),
             ),
           ],
         ),

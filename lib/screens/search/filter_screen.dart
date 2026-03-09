@@ -99,10 +99,14 @@ class _FilterScreenState extends State<FilterScreen> {
 
             // Reviews
             _sectionTitle('Reviews'),
-            ...List.generate(5, (i) {
-              final labels = [
-                '4.5 and above', '4.0 - 4.5', '3.5 - 4.0', '3.0 - 3.5', '2.5 - 3.0'
-              ];
+            RadioGroup<int>(
+              groupValue: _selectedReview,
+              onChanged: (v) => setState(() => _selectedReview = v!),
+              child: Column(
+                children: List.generate(5, (i) {
+                  final labels = [
+                    '4.5 and above', '4.0 - 4.5', '3.5 - 4.0', '3.0 - 3.5', '2.5 - 3.0'
+                  ];
               return GestureDetector(
                 onTap: () => setState(() => _selectedReview = i),
                 child: Padding(
@@ -119,15 +123,15 @@ class _FilterScreenState extends State<FilterScreen> {
                       const Spacer(),
                       Radio<int>(
                         value: i,
-                        groupValue: _selectedReview,
                         activeColor: AppColors.primary,
-                        onChanged: (v) => setState(() => _selectedReview = v!),
                       ),
                     ],
                   ),
                 ),
               );
             }),
+              ),
+            ),
             const SizedBox(height: 16),
 
             // Sort

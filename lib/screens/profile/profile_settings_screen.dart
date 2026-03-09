@@ -49,7 +49,7 @@ class ProfileSettingsScreen extends StatelessWidget {
               child: ListView.separated(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 itemCount: menuItems.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 4),
+                separatorBuilder: (context, index) => const SizedBox(height: 4),
                 itemBuilder: (ctx, i) {
                   final item = menuItems[i];
                   final isLogout = item['label'] == 'Logout';

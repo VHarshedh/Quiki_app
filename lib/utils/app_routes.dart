@@ -10,7 +10,6 @@ import '../screens/cart/checkout_screen.dart';
 import '../screens/cart/shipping_address_screen.dart';
 import '../screens/cart/payment_method_screen.dart';
 import '../screens/cart/add_card_screen.dart';
-import '../screens/home/home_screen.dart';
 import '../screens/home/product_detail_screen.dart';
 import '../screens/search/search_screen.dart';
 import '../screens/search/search_results_screen.dart';
