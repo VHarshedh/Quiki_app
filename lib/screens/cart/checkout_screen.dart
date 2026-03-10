@@ -1,20 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/app_routes.dart';
 import '../../widgets/primary_button.dart';
+import '../../features/cart/presentation/providers/cart_provider.dart';
+import '../../features/address/presentation/providers/address_provider.dart';
+import '../../auth/presentation/providers/auth_provider.dart';
 
 class CheckoutScreen extends StatelessWidget {
   const CheckoutScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final orderItems = [
-      {'name': 'Chocolate Cake', 'category': 'Cake', 'price': '\$50.00'},
-      {'name': 'Divine Cupcake Delights', 'category': 'Cup Cake', 'price': '\$12.00'},
-      {'name': 'Vanilla Velvet Delights', 'category': 'Cake', 'price': '\$20.00'},
-      {'name': 'Brown Breads', 'category': 'Bread', 'price': '\$10.00'},
-    ];
+    final cartProvider = context.watch<CartProvider>();
+    final addressProvider = context.watch<AddressProvider>();
+    final authProvider = context.watch<AuthProvider>();
+
+    // Listen to addresses if authenticated
+    if (authProvider.isAuthenticated) {
+      addressProvider.listenToAddresses(authProvider.user.id);
+    }
+
+    final selectedAddress = addressProvider.selectedAddress;
 
     return Scaffold(
       appBar: AppBar(
@@ -51,13 +59,17 @@ class CheckoutScreen extends StatelessWidget {
               children: [
                 const Icon(Icons.location_on_outlined, color: AppColors.primary, size: 20),
                 const SizedBox(width: 8),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Home', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-                    Text('1901 Thornridge Cir. Shiloh, Hawaii 81063',
-                        style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                  ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(selectedAddress?.label ?? 'No address selected',
+                          style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                      Text(
+                          selectedAddress?.fullAddress ?? 'Please add a shipping address',
+                          style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -68,48 +80,48 @@ class CheckoutScreen extends StatelessWidget {
             Text('Order List',
                 style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600)),
             const SizedBox(height: 12),
-            ...orderItems.map((item) => Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.04),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
+            ...cartProvider.items.map((item) => Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Icon(Icons.cake, color: AppColors.primaryLight, size: 28),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 56,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(Icons.cake, color: AppColors.primaryLight, size: 28),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(item.name,
+                                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                            Text('${item.category} • x${item.quantity}',
+                                style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                          ],
+                        ),
+                      ),
+                      Text('\$${item.total.toStringAsFixed(2)}',
+                          style: const TextStyle(fontWeight: FontWeight.w700)),
+                    ],
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(item['name']!,
-                            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-                        Text(item['category']!,
-                            style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                      ],
-                    ),
-                  ),
-                  Text(item['price']!,
-                      style: const TextStyle(fontWeight: FontWeight.w700)),
-                ],
-              ),
-            )),
+                )),
           ],
         ),
       ),

@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/app_routes.dart';
 import '../../widgets/primary_button.dart';
+import '../../auth/presentation/providers/auth_provider.dart';
+import '../../features/profile/presentation/providers/profile_provider.dart';
 
 class ProfileSettingsScreen extends StatelessWidget {
   const ProfileSettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
-    final isGuest = user == null;
+    final authProvider = context.watch<AuthProvider>();
+    final isGuest = !authProvider.isAuthenticated;
 
     if (isGuest) {
       return Scaffold(
@@ -51,6 +53,12 @@ class ProfileSettingsScreen extends StatelessWidget {
       );
     }
 
+    // Load profile data
+    final profileProvider = context.watch<ProfileProvider>();
+    if (profileProvider.profileData == null && !profileProvider.isLoading) {
+      profileProvider.loadProfile(authProvider.user.id);
+    }
+
     final menuItems = [
       {'icon': Icons.person_outline, 'label': 'Personal Info', 'route': AppRoutes.editProfile},
       {'icon': Icons.local_shipping_outlined, 'label': 'Track Order', 'route': AppRoutes.trackOrder},
@@ -61,6 +69,13 @@ class ProfileSettingsScreen extends StatelessWidget {
       {'icon': Icons.security_outlined, 'label': 'Security', 'route': AppRoutes.setPassword},
       {'icon': Icons.logout, 'label': 'Logout', 'route': AppRoutes.login},
     ];
+
+    final displayName = profileProvider.name.isNotEmpty
+        ? profileProvider.name
+        : authProvider.user.name ?? 'My Account';
+    final displayEmail = profileProvider.email.isNotEmpty
+        ? profileProvider.email
+        : authProvider.user.email;
 
     return Scaffold(
       body: SafeArea(
@@ -79,11 +94,11 @@ class ProfileSettingsScreen extends StatelessWidget {
               child: Icon(Icons.person, size: 44, color: AppColors.primaryLight),
             ),
             const SizedBox(height: 12),
-            Text(user.displayName ?? 'My Account',
+            Text(displayName,
                 style: GoogleFonts.poppins(
                     fontSize: 18, fontWeight: FontWeight.w600)),
             const SizedBox(height: 4),
-            Text(user.email ?? '',
+            Text(displayEmail,
                 style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
             const SizedBox(height: 24),
 
@@ -126,7 +141,7 @@ class ProfileSettingsScreen extends StatelessWidget {
                       final route = item['route'] as String;
                       if (route.isNotEmpty) {
                         if (isLogout) {
-                          FirebaseAuth.instance.signOut();
+                          authProvider.signOut();
                           Navigator.pushNamedAndRemoveUntil(
                               context, route, (r) => false);
                         } else {

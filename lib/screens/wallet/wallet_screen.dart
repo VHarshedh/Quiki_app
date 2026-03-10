@@ -1,19 +1,49 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../../utils/app_theme.dart';
+import '../../utils/app_routes.dart';
+import '../../widgets/primary_button.dart';
+import '../../features/wallet/presentation/providers/wallet_provider.dart';
+import '../../auth/presentation/providers/auth_provider.dart';
 
 class WalletScreen extends StatelessWidget {
   const WalletScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final transactions = [
-      {'name': 'Strawberry Cup Cake', 'date': 'Feb 28, 2025', 'price': '-\$50.00'},
-      {'name': 'Vanila Cake', 'date': 'Feb 27, 2025', 'price': '-\$80.00'},
-      {'name': 'Top Up', 'date': 'Feb 26, 2025', 'price': '+\$200.00'},
-      {'name': 'Chocolate Cake', 'date': 'Feb 25, 2025', 'price': '-\$35.00'},
-      {'name': 'Initial Deposit', 'date': 'Feb 24, 2025', 'price': '+\$500.00'},
-    ];
+    final authProvider = context.watch<AuthProvider>();
+    final walletProvider = context.watch<WalletProvider>();
+
+    // Start listening if authenticated
+    if (authProvider.isAuthenticated) {
+      walletProvider.listenToWallet(authProvider.user.id);
+    }
+
+    if (!authProvider.isAuthenticated) {
+      return Scaffold(
+        body: SafeArea(
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.account_balance_wallet_outlined,
+                    size: 64, color: AppColors.textHint),
+                const SizedBox(height: 16),
+                Text('Please login to view your wallet',
+                    style: TextStyle(color: AppColors.textSecondary)),
+                const SizedBox(height: 16),
+                PrimaryButton(
+                  text: 'Login',
+                  onPressed: () => Navigator.pushNamedAndRemoveUntil(
+                      context, AppRoutes.login, (r) => false),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       body: SafeArea(
@@ -55,7 +85,8 @@ class WalletScreen extends StatelessWidget {
                           fontSize: 14,
                         )),
                     const SizedBox(height: 8),
-                    Text('\$450.00',
+                    Text(
+                        '\$${walletProvider.balance.toStringAsFixed(2)}',
                         style: GoogleFonts.poppins(
                           color: AppColors.white,
                           fontSize: 32,
@@ -94,75 +125,98 @@ class WalletScreen extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                itemCount: transactions.length,
-                itemBuilder: (ctx, i) {
-                  final t = transactions[i];
-                  final isCredit = t['price']!.startsWith('+');
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: AppColors.white,
-                      borderRadius: BorderRadius.circular(14),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.04),
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
+              child: walletProvider.isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : walletProvider.transactions.isEmpty
+                      ? Center(
+                          child: Text('No transactions yet',
+                              style: TextStyle(color: AppColors.textSecondary)),
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          itemCount: walletProvider.transactions.length,
+                          itemBuilder: (ctx, i) {
+                            final t = walletProvider.transactions[i];
+                            final amount =
+                                (t['amount'] as num?)?.toDouble() ?? 0.0;
+                            final isCredit =
+                                (t['type'] ?? '') == 'credit' || amount > 0;
+                            final displayAmount = isCredit
+                                ? '+\$${amount.abs().toStringAsFixed(2)}'
+                                : '-\$${amount.abs().toStringAsFixed(2)}';
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: AppColors.white,
+                                borderRadius: BorderRadius.circular(14),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color:
+                                        Colors.black.withValues(alpha: 0.04),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 44,
+                                    height: 44,
+                                    decoration: BoxDecoration(
+                                      color: (isCredit
+                                              ? AppColors.success
+                                              : AppColors.primary)
+                                          .withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Icon(
+                                      isCredit
+                                          ? Icons.add_circle_outline
+                                          : Icons.cake,
+                                      color: isCredit
+                                          ? AppColors.success
+                                          : AppColors.primary,
+                                      size: 22,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(t['name'] ?? '',
+                                            style: const TextStyle(
+                                                fontWeight: FontWeight.w600,
+                                                fontSize: 14)),
+                                        Text(t['date'] ?? '',
+                                            style: TextStyle(
+                                                fontSize: 12,
+                                                color:
+                                                    AppColors.textSecondary)),
+                                      ],
+                                    ),
+                                  ),
+                                  Text(displayAmount,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                        color: isCredit
+                                            ? AppColors.success
+                                            : AppColors.textPrimary,
+                                      )),
+                                  const SizedBox(width: 8),
+                                  Icon(
+                                    Icons.check_circle,
+                                    size: 18,
+                                    color: AppColors.success,
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
                         ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 44,
-                          height: 44,
-                          decoration: BoxDecoration(
-                            color: (isCredit
-                                    ? AppColors.success
-                                    : AppColors.primary)
-                                .withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(
-                            isCredit ? Icons.add_circle_outline : Icons.cake,
-                            color: isCredit ? AppColors.success : AppColors.primary,
-                            size: 22,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(t['name']!,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.w600, fontSize: 14)),
-                              Text(t['date']!,
-                                  style: TextStyle(
-                                      fontSize: 12,
-                                      color: AppColors.textSecondary)),
-                            ],
-                          ),
-                        ),
-                        Text(t['price']!,
-                            style: TextStyle(
-                              fontWeight: FontWeight.w700,
-                              color: isCredit ? AppColors.success : AppColors.textPrimary,
-                            )),
-                        const SizedBox(width: 8),
-                        Icon(
-                          Icons.check_circle,
-                          size: 18,
-                          color: AppColors.success,
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
             ),
           ],
         ),

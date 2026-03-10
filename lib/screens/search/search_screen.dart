@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/app_routes.dart';
+import '../../features/search/presentation/providers/search_provider.dart';
+import '../../features/home/presentation/providers/products_provider.dart';
+import '../../features/home/domain/product.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -12,17 +16,6 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   final _searchCtrl = TextEditingController();
-  final _recentSearches = [
-    'Raspberry Rhapsody',
-    'Berry Burst Bonanza',
-    'Velvet Dream Delight',
-  ];
-  final _recentViews = [
-    {'name': 'Chocolate Chip Cascade', 'category': 'Cookies', 'price': '\$20.00'},
-    {'name': 'Choco Bliss Cupcakes', 'category': 'Cup Cake', 'price': '\$22.00'},
-    {'name': 'Strawberry Fields Frosted', 'category': 'Donut', 'price': '\$25.00'},
-    {'name': 'Chocolate Caramel Donuts', 'category': 'Donut', 'price': '\$18.00'},
-  ];
 
   @override
   void dispose() {
@@ -32,6 +25,8 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final searchProvider = context.watch<SearchProvider>();
+
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -71,8 +66,10 @@ class _SearchScreenState extends State<SearchScreen> {
                                 filled: true,
                                 contentPadding: EdgeInsets.symmetric(vertical: 12),
                               ),
-                              onSubmitted: (_) =>
-                                  Navigator.pushNamed(context, AppRoutes.searchResults),
+                              onSubmitted: (query) {
+                                searchProvider.search(query);
+                                Navigator.pushNamed(context, AppRoutes.searchResults);
+                              },
                             ),
                           ),
                           GestureDetector(
@@ -101,88 +98,118 @@ class _SearchScreenState extends State<SearchScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Recent Search
-                    Text('Recent Search',
-                        style: GoogleFonts.poppins(
-                            fontSize: 16, fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 12),
-                    ...List.generate(_recentSearches.length, (i) {
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(_recentSearches[i],
-                                  style: TextStyle(
-                                      fontSize: 14, color: AppColors.textSecondary)),
-                            ),
-                            GestureDetector(
-                              onTap: () => setState(() => _recentSearches.removeAt(i)),
-                              child: const Icon(Icons.close, size: 16, color: AppColors.textHint),
-                            ),
-                          ],
-                        ),
-                      );
-                    }),
-
-                    const SizedBox(height: 24),
-
-                    // Recent View
-                    Text('Recent View',
-                        style: GoogleFonts.poppins(
-                            fontSize: 16, fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 12),
-                    ...List.generate(_recentViews.length, (i) {
-                      final item = _recentViews[i];
-                      return GestureDetector(
-                        onTap: () => Navigator.pushNamed(context, AppRoutes.productDetail),
-                        child: Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: AppColors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.04),
-                                blurRadius: 6,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
+                    if (searchProvider.recentSearches.isNotEmpty) ...[
+                      Text('Recent Search',
+                          style: GoogleFonts.poppins(
+                              fontSize: 16, fontWeight: FontWeight.w600)),
+                      const SizedBox(height: 12),
+                      ...List.generate(searchProvider.recentSearches.length, (i) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
                           child: Row(
                             children: [
-                              Container(
-                                width: 52,
-                                height: 52,
-                                decoration: BoxDecoration(
-                                  color: AppColors.surface,
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: const Icon(Icons.cake,
-                                    color: AppColors.primaryLight, size: 26),
-                              ),
-                              const SizedBox(width: 12),
                               Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(item['name']!,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.w600, fontSize: 14)),
-                                    Text(item['category']!,
-                                        style: TextStyle(
-                                            fontSize: 12,
-                                            color: AppColors.textSecondary)),
-                                  ],
+                                child: GestureDetector(
+                                  onTap: () {
+                                    _searchCtrl.text = searchProvider.recentSearches[i];
+                                    searchProvider.search(searchProvider.recentSearches[i]);
+                                    Navigator.pushNamed(context, AppRoutes.searchResults);
+                                  },
+                                  child: Text(searchProvider.recentSearches[i],
+                                      style: TextStyle(
+                                          fontSize: 14, color: AppColors.textSecondary)),
                                 ),
                               ),
-                              Text(item['price']!,
-                                  style: const TextStyle(fontWeight: FontWeight.w700)),
+                              GestureDetector(
+                                onTap: () => searchProvider.removeRecentSearch(i),
+                                child: const Icon(Icons.close, size: 16, color: AppColors.textHint),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                      const SizedBox(height: 24),
+                    ],
+
+                    // Recent View
+                    if (searchProvider.recentViews.isNotEmpty) ...[
+                      Text('Recent View',
+                          style: GoogleFonts.poppins(
+                              fontSize: 16, fontWeight: FontWeight.w600)),
+                      const SizedBox(height: 12),
+                      ...List.generate(searchProvider.recentViews.length, (i) {
+                        final Product item = searchProvider.recentViews[i];
+                        return GestureDetector(
+                          onTap: () {
+                            context.read<ProductsProvider>().selectProduct(item);
+                            Navigator.pushNamed(context, AppRoutes.productDetail);
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: AppColors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.04),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 52,
+                                  height: 52,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.surface,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: const Icon(Icons.cake,
+                                      color: AppColors.primaryLight, size: 26),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(item.name,
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.w600, fontSize: 14)),
+                                      Text(item.category,
+                                          style: TextStyle(
+                                              fontSize: 12,
+                                              color: AppColors.textSecondary)),
+                                    ],
+                                  ),
+                                ),
+                                Text('\$${item.price.toStringAsFixed(2)}',
+                                    style: const TextStyle(fontWeight: FontWeight.w700)),
+                              ],
+                            ),
+                          ),
+                        );
+                      }),
+                    ],
+
+                    // Show hint if no recent data
+                    if (searchProvider.recentSearches.isEmpty &&
+                        searchProvider.recentViews.isEmpty)
+                      Center(
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 60),
+                          child: Column(
+                            children: [
+                              Icon(Icons.search, size: 64, color: AppColors.textHint),
+                              const SizedBox(height: 16),
+                              Text('Start searching for cakes, desserts...',
+                                  style: TextStyle(color: AppColors.textSecondary)),
                             ],
                           ),
                         ),
-                      );
-                    }),
+                      ),
                   ],
                 ),
               ),

@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "1067389844485",
+    "project_id": "quiki-292dd",
+    "storage_bucket": "quiki-292dd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1067389844485:android:1ba1eba7d8e07184efb06c",
+        "android_client_info": {
+          "package_name": "com.nocodeclub.quiki"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB2gjW94kVdik6l_xRcN4whZSEI6Jf2fsk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1067389844485:android:fc97e1b98d40c669efb06c",
+        "android_client_info": {
+          "package_name": "com.quiki.quiki_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB2gjW94kVdik6l_xRcN4whZSEI6Jf2fsk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,25 +1,54 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/primary_button.dart';
+import '../../auth/presentation/providers/auth_provider.dart';
+import '../../features/profile/presentation/providers/profile_provider.dart';
 
-class EditProfileScreen extends StatelessWidget {
+class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
 
   @override
+  State<EditProfileScreen> createState() => _EditProfileScreenState();
+}
+
+class _EditProfileScreenState extends State<EditProfileScreen> {
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
+  bool _initialized = false;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
+    final profileProvider = context.watch<ProfileProvider>();
+
+    // Initialize controllers with existing data once
+    if (!_initialized && profileProvider.profileData != null) {
+      _nameController.text = profileProvider.name;
+      _emailController.text = profileProvider.email.isNotEmpty
+          ? profileProvider.email
+          : authProvider.user.email;
+      _phoneController.text = profileProvider.phone;
+      _initialized = true;
+    }
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('Profile'),
-        actions: [
-          IconButton(icon: const Icon(Icons.calendar_today_outlined), onPressed: () {}),
-          IconButton(icon: const Icon(Icons.emoji_emotions_outlined), onPressed: () {}),
-          IconButton(icon: const Icon(Icons.settings_outlined), onPressed: () {}),
-        ],
+        title: const Text('Edit Profile'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -49,13 +78,35 @@ class EditProfileScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 30),
-            _buildField('Username', 'Sana Nassani'),
-            _buildField('Email', 'sananassani@gmail.com'),
-            _buildField('Password', '••••••••', isPassword: true),
-            _buildDropdownField('Gender', 'Female'),
-            _buildField('Date of Birth', '01/01/1990'),
+            _buildField('Name', _nameController),
+            _buildField('Email', _emailController, enabled: false),
+            _buildField('Phone', _phoneController),
             const SizedBox(height: 30),
-            PrimaryButton(text: 'Save', onPressed: () => Navigator.pop(context)),
+            Consumer<ProfileProvider>(
+              builder: (context, provider, _) {
+                return PrimaryButton(
+                  text: provider.isLoading ? 'Saving...' : 'Save',
+                  onPressed: provider.isLoading
+                      ? null
+                      : () async {
+                          final success = await profileProvider.updateProfile(
+                            authProvider.user.id,
+                            {
+                              'name': _nameController.text.trim(),
+                              'phone': _phoneController.text.trim(),
+                            },
+                          );
+                          if (!context.mounted) return;
+                          if (success) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Profile updated!')),
+                            );
+                            Navigator.pop(context);
+                          }
+                        },
+                );
+              },
+            ),
             const SizedBox(height: 30),
           ],
         ),
@@ -63,7 +114,8 @@ class EditProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildField(String label, String value, {bool isPassword = false}) {
+  Widget _buildField(String label, TextEditingController controller,
+      {bool enabled = true}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Column(
@@ -79,47 +131,10 @@ class EditProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           TextField(
-            controller: TextEditingController(text: value),
-            obscureText: isPassword,
+            controller: controller,
+            enabled: enabled,
             decoration: InputDecoration(
-              suffixIcon: isPassword
-                  ? const Icon(Icons.visibility_off_outlined,
-                      color: AppColors.textHint)
-                  : null,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDropdownField(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: GoogleFonts.poppins(
-              fontSize: 13,
-              color: AppColors.textSecondary,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(value, style: GoogleFonts.poppins(fontSize: 14)),
-                const Icon(Icons.keyboard_arrow_down, color: AppColors.textHint),
-              ],
+              fillColor: enabled ? null : AppColors.surface,
             ),
           ),
         ],

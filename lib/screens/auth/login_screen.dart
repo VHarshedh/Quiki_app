@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/app_routes.dart';
 import '../../widgets/primary_button.dart';
+import '../../auth/presentation/providers/auth_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -21,6 +23,33 @@ class _LoginScreenState extends State<LoginScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleLogin() async {
+    final authProvider = context.read<AuthProvider>();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter email and password')),
+      );
+      return;
+    }
+
+    final success = await authProvider.signIn(email: email, password: password);
+    if (mounted) {
+      if (success) {
+        Navigator.pushReplacementNamed(context, AppRoutes.main);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(authProvider.errorMessage ?? 'Login failed'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -85,10 +114,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              PrimaryButton(
-                text: 'Login',
-                onPressed: () =>
-                    Navigator.pushReplacementNamed(context, AppRoutes.main),
+              // Login button with loading state
+              Consumer<AuthProvider>(
+                builder: (context, auth, _) {
+                  return PrimaryButton(
+                    text: auth.isLoading ? 'Logging in...' : 'Login',
+                    onPressed: auth.isLoading ? null : _handleLogin,
+                  );
+                },
               ),
               const SizedBox(height: 24),
               Row(

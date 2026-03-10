@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../../utils/app_theme.dart';
-import '../../utils/app_routes.dart';
 import '../../widgets/primary_button.dart';
+import '../../features/home/presentation/providers/products_provider.dart';
+import '../../features/cart/presentation/providers/cart_provider.dart';
+import '../../auth/presentation/providers/auth_provider.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   const ProductDetailScreen({super.key});
@@ -18,6 +21,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final product = context.watch<ProductsProvider>().selectedProduct;
+
+    if (product == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final sizes = product.sizes.isNotEmpty ? product.sizes : ['Regular', 'Large'];
+
     return Scaffold(
       body: Column(
         children: [
@@ -28,7 +41,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 height: 320,
                 width: double.infinity,
                 color: AppColors.surface,
-                child: const Icon(Icons.cake, size: 120, color: AppColors.primaryLight),
+                child: product.imageUrl.isNotEmpty
+                    ? Image.network(product.imageUrl, fit: BoxFit.cover)
+                    : const Icon(Icons.cake, size: 120, color: AppColors.primaryLight),
               ),
               Positioned(
                 top: MediaQuery.of(context).padding.top + 8,
@@ -57,7 +72,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(
-                        child: Text('Chocolate Cake',
+                        child: Text(product.name,
                             style: GoogleFonts.poppins(
                                 fontSize: 22, fontWeight: FontWeight.w700)),
                       ),
@@ -65,19 +80,20 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         children: [
                           const Icon(Icons.star, color: AppColors.star, size: 18),
                           const SizedBox(width: 4),
-                          Text('4.8', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-                          Text(' (1k+ Reviews)',
-                              style: TextStyle(
-                                  fontSize: 12, color: AppColors.textSecondary)),
+                          Text(product.rating.toStringAsFixed(1),
+                              style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
                         ],
                       ),
                     ],
                   ),
                   const SizedBox(height: 4),
-                  Text('Cake', style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
+                  Text(product.category,
+                      style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
                   const SizedBox(height: 16),
                   Text(
-                    'A rich, moist chocolate cake made with premium cocoa powder and layered with velvety chocolate ganache. Perfect for celebrations or a sweet treat any day.',
+                    product.description.isNotEmpty
+                        ? product.description
+                        : 'A delicious ${product.name.toLowerCase()} made with premium ingredients. Perfect for any occasion.',
                     style: GoogleFonts.poppins(
                       fontSize: 13,
                       color: AppColors.textSecondary,
@@ -92,7 +108,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           fontSize: 16, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 12),
                   Row(
-                    children: ['Regular', 'Large'].map((s) {
+                    children: sizes.map((s) {
                       final selected = s == _size;
                       return GestureDetector(
                         onTap: () => setState(() => _size = s),
@@ -158,7 +174,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('Price', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-                    Text('\$${(50.0 * _qty).toStringAsFixed(2)}',
+                    Text('\$${(product.price * _qty).toStringAsFixed(2)}',
                         style: GoogleFonts.poppins(
                             fontSize: 22, fontWeight: FontWeight.w700)),
                   ],
@@ -167,7 +183,27 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 Expanded(
                   child: PrimaryButton(
                     text: 'Add to Cart',
-                    onPressed: () => Navigator.pushNamed(context, AppRoutes.myCart),
+                    onPressed: () {
+                      final authProvider = context.read<AuthProvider>();
+                      if (authProvider.isAuthenticated) {
+                        context.read<CartProvider>().addToCart(
+                              uid: authProvider.user.id,
+                              productId: product.id,
+                              name: product.name,
+                              category: product.category,
+                              price: product.price,
+                              size: _size,
+                              imageUrl: product.imageUrl,
+                            );
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('${product.name} added to cart!')),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Please login to add items to cart')),
+                        );
+                      }
+                    },
                   ),
                 ),
               ],
