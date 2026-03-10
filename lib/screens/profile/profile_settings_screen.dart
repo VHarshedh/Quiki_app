@@ -1,13 +1,56 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/app_routes.dart';
+import '../../widgets/primary_button.dart';
 
 class ProfileSettingsScreen extends StatelessWidget {
   const ProfileSettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+    final isGuest = user == null;
+
+    if (isGuest) {
+      return Scaffold(
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.person_outline, size: 80, color: AppColors.textHint),
+                const SizedBox(height: 16),
+                Text(
+                  'Guest Profile',
+                  style: GoogleFonts.poppins(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Please login or sign up to view your profile, orders, and settings.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+                ),
+                const SizedBox(height: 32),
+                PrimaryButton(
+                  text: 'Login / Sign Up',
+                  onPressed: () {
+                    Navigator.pushNamedAndRemoveUntil(
+                        context, AppRoutes.login, (route) => false);
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     final menuItems = [
       {'icon': Icons.person_outline, 'label': 'Personal Info', 'route': AppRoutes.editProfile},
       {'icon': Icons.local_shipping_outlined, 'label': 'Track Order', 'route': AppRoutes.trackOrder},
@@ -36,11 +79,11 @@ class ProfileSettingsScreen extends StatelessWidget {
               child: Icon(Icons.person, size: 44, color: AppColors.primaryLight),
             ),
             const SizedBox(height: 12),
-            Text('Sana Nassani',
+            Text(user.displayName ?? 'My Account',
                 style: GoogleFonts.poppins(
                     fontSize: 18, fontWeight: FontWeight.w600)),
             const SizedBox(height: 4),
-            Text('sananassani@gmail.com',
+            Text(user.email ?? '',
                 style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
             const SizedBox(height: 24),
 
@@ -83,6 +126,7 @@ class ProfileSettingsScreen extends StatelessWidget {
                       final route = item['route'] as String;
                       if (route.isNotEmpty) {
                         if (isLogout) {
+                          FirebaseAuth.instance.signOut();
                           Navigator.pushNamedAndRemoveUntil(
                               context, route, (r) => false);
                         } else {
