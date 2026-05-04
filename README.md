@@ -9,16 +9,6 @@
 
 ---
 
-## 📱 Screenshots
-
-> *Note to recruiter: Add screenshots of your app here to showcase the UI/UX.*
->
-> | Home Screen | Product Details | Cart & Checkout | Profile |
-> | :---: | :---: | :---: | :---: |
-> | <img src="assets/screenshots/home.png" width="200"/> | <img src="assets/screenshots/details.png" width="200"/> | <img src="assets/screenshots/cart.png" width="200"/> | <img src="assets/screenshots/profile.png" width="200"/> |
-
----
-
 ## ✨ Key Features
 
 - **Authentication:** Secure user onboarding, sign-up, and login flows using Firebase Authentication.
